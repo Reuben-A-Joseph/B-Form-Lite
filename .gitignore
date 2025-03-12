@@ -1,0 +1,42 @@
+# Ignore build artifacts
+src/build/
+src/dist/
+src/b_form_light.spec
+
+# Virtual environments
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore virtual environment
+venv/
+.env/
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore backup and temporary Excel files
+~*.xlsx
+*.xlsb
+*.xlsm
+
+# Ignore large data files (optional)
+*.csv
+*.json
+
+# Allow specific assets (Remove *.xlsx & *.png if you want them in Git)
+# If you want to track them, remove these lines
+# *.xlsx
+# *.png
