@@ -1,6 +1,5 @@
 # Ignore build artifacts
 src/build/
-src/dist/
 src/b_form_light.spec
 
 # Virtual environments
