@@ -13,26 +13,3 @@ This project is licensed under the GNU General Public License v3.0.
 - All images and Excel files are licensed under GPLv3.
 
 ```
-
-
-      Cell In[5], line 6
-        - `assets/vtu.png` → Used for image processing.
-                           ^
-    SyntaxError: invalid character '→' (U+2192)
-    
-
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
