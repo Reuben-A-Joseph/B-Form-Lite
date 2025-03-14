@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 """
@@ -129,13 +129,32 @@ def process_excel_file(new_filename, max_rows_per_sheet):
     # Implement your logic to process the Excel file here
     print(f"Processing Excel file: {new_filename}")
     
+    def find_file(filename):
+        """Search for the file anywhere in the system and return its path."""
+        for root, _, files in os.walk("C:\\"):  # Change "C:\\" to "/" for Linux/Mac
+            if filename in files:
+                 return os.path.join(root, filename)
+        return None
+
+    # Search for the required files
+    image_path = find_file("vtu.png")
+    excel_template_path = find_file("empty_b_form.xlsx")
+
+    if not image_path or not excel_template_path:
+        print("Error: Required files (image and/or Excel template) not found on the system!")
+        return
+
+    print(f"Image found at: {image_path}")
+    print(f"Excel template found at: {excel_template_path}")
+    
     class ExcelDataCopier:
-        def __init__(self, source_file, destination_file, max_rows_per_sheet):
+        def __init__(self, source_file, excel_template_path, max_rows_per_sheet, image_path):
             self.source_file = source_file
-            self.destination_file = destination_file
+            self.excel_template_path = excel_template_path
             self.source_wb = openpyxl.load_workbook(source_file)
-            self.dest_wb = openpyxl.load_workbook(destination_file)
+            self.dest_wb = openpyxl.load_workbook(excel_template_path)
             self.max_rows_per_sheet = max_rows_per_sheet
+            self.image_path = image_path  # Store image path
 
         def copy_data(self, source_cells, dest_cells):
             source_ws = self.source_wb.active
@@ -205,7 +224,7 @@ def process_excel_file(new_filename, max_rows_per_sheet):
                     dest_ws.cell(row=12, column=11).value = source_last_row_value
      
                     dest_ws = self.dest_wb.copy_worksheet(dest_ws)
-                    img=Image("vtu.png")
+                    img = Image(image_path)
                     img.height=54
                     img.width=676
                     dest_ws.add_image(img,"B2")
@@ -224,7 +243,7 @@ def process_excel_file(new_filename, max_rows_per_sheet):
                         last_set_last_row_value = source_ws.cell(row=source_ws.max_row, column=2).value
                         dest_ws.cell(row=12, column=11).value = last_set_last_row_value
             
-        def save_destination_file(self, filename=None):
+        def save_excel_template_path(self, filename=None):
             source_ws = self.source_wb.active
             if filename is None:
                 cell_name = source_ws["H5"].value  # Change "H5" to the cell containing the desired sheet name
@@ -235,7 +254,7 @@ def process_excel_file(new_filename, max_rows_per_sheet):
             print(f"Destination file '{filename}' saved successfully.")
             
     # Call your actual processing function here
-    copier = ExcelDataCopier(new_filename, "empty_b_form.xlsx", max_rows_per_sheet)
+    copier = ExcelDataCopier(new_filename, excel_template_path, max_rows_per_sheet, image_path)
     
     source_cells = ["A3","B3","C3","D3","E3","F3","G3","H3","I3","F5","G5","I5","AJ2","AK2","AE2","AF2","AG2","AH2","E5"]  # Example source cells
     dest_cells = ["I10","J10","K10","L10","M10","N10","O10","P10","Q10","G6","C12","E8","L6","M6","N6","O6","P6","Q6","C9"]    # Example destination cells
@@ -256,7 +275,7 @@ def process_excel_file(new_filename, max_rows_per_sheet):
     copier.copy_data_merged_cells(source_date_cells, dest_combined_cell)
     copier.copy_data_merged_cells_time(source_time_cells, dest_combined_cell_time)
     copier.copy_values_with_images()
-    copier.save_destination_file()
+    copier.save_excel_template_path()
 
     # Specify the merged cells in the destination where you want to paste the value
     merged_dest_cells = ["C9:C10"]
@@ -319,13 +338,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# In[ ]:
-
-
-
-
 
 
 # In[ ]:
