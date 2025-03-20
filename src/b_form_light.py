@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[2]:
 
 
 """
@@ -19,6 +19,7 @@ under the GNU General Public License v3.0.
 
 
 
+import pandas as pd
 import os
 import xlwings as xw
 import xlwings
@@ -41,89 +42,108 @@ def select_files_and_process(root, max_rows_per_sheet):
                 process_file(selected_file, output_folder, max_rows_per_sheet)  # Call process_file() for each file
     else:
         messagebox.showerror("Error", "No files selected.")
+    
+def convert_to_xlsx(selected_file, output_folder):
+    """
+    Converts HTML, HTM, or XLS files to XLSX format.
+    """
+    file_extension = os.path.splitext(selected_file)[1].lower()
+    new_filename = os.path.join(output_folder, f"converted_{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.xlsx")
+    
+    if file_extension in [".xls"]:
+        wb = xw.Book(selected_file)
+        wb.save(new_filename)
+        wb.close()
+        print(f"Converted {selected_file} to {new_filename}")
+    
+    elif file_extension in [".html", ".htm"]:
+        df = pd.read_html(selected_file)[0]  # Read the first table found
+        df.to_excel(new_filename, index=False)
+        print(f"Converted {selected_file} to {new_filename}")
+    
+    else:
+        new_filename = selected_file  # If already XLSX, use the same file
+    
+    return new_filename
 
 def process_file(selected_file, output_folder, max_rows_per_sheet):
     """
     Process the contents of the selected file and create a new Excel file with the same contents.
-    """
+    """      
+        
     # Define new_filename and create a new Excel file
+    selected_file = convert_to_xlsx(selected_file, output_folder)
     
     timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-    new_filename = os.path.join(output_folder, f"output_{timestamp}.xlsx")
-    print(f"Processing file: {selected_file}")
-
-    # Check if the selected file is an Excel file
-    if selected_file.endswith(".xlsx") or selected_file.endswith(".xls"):
-        # Load the Excel file
-        wb = openpyxl.load_workbook(selected_file)
-        ws = wb.active
-
-        # Create a new Excel workbook and worksheet
-        new_wb = openpyxl.Workbook()
-        new_ws = new_wb.active
+    output_filename = os.path.join(output_folder, f"output_{timestamp}.xlsx")
         
-        # Copy the contents of the selected file to the new workbook
-        for row in ws.iter_rows():
-            new_ws.append([cell.value for cell in row])
+    # Load the Excel file
+    wb = openpyxl.load_workbook(selected_file)
+    ws = wb.active
+    
+    # Create a new Excel workbook and worksheet
+    new_wb = openpyxl.Workbook()
+    new_ws = new_wb.active
+        
+    # Copy the contents of the selected file to the new workbook
+    for row in ws.iter_rows():
+        new_ws.append([cell.value for cell in row])
 
         # Add a split command to split the headers
         split_command = "split"  # Modify this with your actual split command
-
-        # Split A2 cell into characters and save each character into separate cells
-        if split_command == "split":
-            A2_value = new_ws["A2"].value
-            for index, character in enumerate(A2_value):
-                new_ws.cell(row=2, column=index + 1).value = character
+        
+    if new_ws["A2"].value:
+        for index, character in enumerate(new_ws["A2"].value):
+            new_ws.cell(row=2, column=index + 1).value = character
             
-            D5_value = new_ws["D5"].value
-            for index, character in enumerate(D5_value):
-                new_ws.cell(row=3, column=index + 1).value = character
+    if new_ws["D5"].value:
+        for index, character in enumerate(new_ws["D5"].value):
+            new_ws.cell(row=3, column=index + 1).value = character
 
-        # Dictionary mapping codes to full forms
-        code_to_full_form = {
-            "IC": "ICEAS"
-        }
+    # Dictionary mapping codes to full forms
+    code_to_full_form = {"IC": "ICEAS"}
 
-        # Extract 2nd and 3rd characters from cells B5 to B13 and save them to the output worksheet
-        for i in range(5, new_ws.max_row + 1):
-            cell_value = new_ws[f"B{i}"].value
-            if cell_value:  # Check if the cell is not empty
-                second_and_third_chars = cell_value[1:3]  # Extract 2nd and 3rd characters
-                new_ws[f"G{i}"].value = code_to_full_form.get(second_and_third_chars, "Unknown Code")
-                new_ws[f"J{i}"].value = second_and_third_chars
+    # Extract 2nd and 3rd characters from cells B5 to B13 and save them to the output worksheet
+    for i in range(5, new_ws.max_row + 1):
+        cell_value = new_ws[f"B{i}"].value
+        if cell_value:  # Check if the cell is not empty
+            second_and_third_chars = cell_value[1:3]  # Extract 2nd and 3rd characters
+            new_ws[f"G{i}"].value = code_to_full_form.get(second_and_third_chars, "Unknown Code")
+            new_ws[f"J{i}"].value = second_and_third_chars
         
-                sixth_and_seventh_chars = cell_value[5:7]  # Extract 6th and 7th characters
-                new_ws[f"H{i-0}"].value = sixth_and_seventh_chars
-                new_ws[f"I{i-0}"].value = "B.E." '(' + sixth_and_seventh_chars +')'
+            sixth_and_seventh_chars = cell_value[5:7]  # Extract 6th and 7th characters
+            new_ws[f"H{i-0}"].value = sixth_and_seventh_chars
+            new_ws[f"I{i-0}"].value = "B.E." '(' + sixth_and_seventh_chars +')'
 
-        def int_to_roman(num):
-            val = [
-                1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1
-            ]
-            syms = [
-                'M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'
-            ]
-            roman_num = ''
-            i = 0
-            while num > 0:
-                for _ in range(num // val[i]):
-                    roman_num += syms[i]
-                    num -= val[i]
-                i += 1
-            return roman_num
+    def int_to_roman(num):
+        val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+        syms = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
+        roman_num = ''
+        i = 0
+        while num > 0:
+            for _ in range(num // val[i]):
+                roman_num += syms[i]
+                num -= val[i]
+            i += 1
+        return roman_num
     
-        # Convert the number in cell F5 to Roman numeral
-        f5_value = new_ws["F5"].value
-        if f5_value is not None:
-            roman_numeral = int_to_roman(f5_value)
-            new_ws["F5"].value = roman_numeral 
+    # Convert the number in cell F5 to Roman numeral
+    f5_value = new_ws["F5"].value
+    if f5_value is not None:
+        roman_numeral = int_to_roman(f5_value)
+        new_ws["F5"].value = roman_numeral 
 
-        # Save the new Excel file
-        new_wb.save(new_filename)
-        print(f"New Excel file '{new_filename}' created successfully.")
+    # Save the new Excel file
+    # Ensure new_filename is properly assigned
+    new_filename = output_filename 
+
+    # Save the new Excel file
+    new_wb.save(new_filename)
+
+    print(f"Output file created: {new_filename}")
         
-        # Now we have the new_filename, let's call process_excel_file with it
-        process_excel_file(new_filename, max_rows_per_sheet)
+    # Now we have the new_filename, let's call process_excel_file with it
+    process_excel_file(new_filename, max_rows_per_sheet)
 
 def process_excel_file(new_filename, max_rows_per_sheet):
     # Implement your logic to process the Excel file here
@@ -184,10 +204,19 @@ def process_excel_file(new_filename, max_rows_per_sheet):
             for cell in source_time_cells:
                 combined_value_1 += str(source_ws[cell].value) + " "
 
-            # Set the combined value to the destination cell in the destination file
-            dest_ws[dest_combined_cell_time].value = combined_value_1.strip() + ' AM'
-            
-            if dest_ws[dest_combined_cell_time].value == '0 9 : 3 0 AM':
+            # Format the value based on specific conditions
+            if combined_value_1.strip() == '0 9 : 3 0':
+                formatted_value = '0 9 : 3 0 AM'
+            elif combined_value_1.strip() in ['0 2 : 0 0', '1 4 : 0 0']:
+                formatted_value = '0 2 : 0 0 PM'
+            else:
+                formatted_value = combined_value_1.strip() + ' AM'  # Default formatting
+
+            # Assign the formatted value to the destination cell
+            dest_ws[dest_combined_cell_time].value = formatted_value
+
+            # Set M14 based on the assigned value
+            if formatted_value == '0 9 : 3 0 AM':
                 dest_ws['M14'].value = '1 2 : 3 0 PM'
             else:
                 dest_ws['M14'].value = '0 5 : 0 0 PM'
@@ -314,17 +343,6 @@ def main():
         if max_rows_per_sheet:
             select_files_and_process(root, int(max_rows_per_sheet))
 
-    def select_files_and_process(root, max_rows_per_sheet):
-        files_selected = filedialog.askopenfilenames()
-        if files_selected:
-            selected_files = root.tk.splitlist(files_selected)
-            output_folder = select_output_folder(root)
-            if output_folder:
-                for selected_file in selected_files:  # Iterate over each selected file
-                    process_file(selected_file, output_folder, max_rows_per_sheet)  # Call process_file() for each file
-        else:
-            messagebox.showerror("Error", "No files selected.")
-
     max_rows_label = tk.Label(root, text="Enter the maximum number of rows per sheet:")
     max_rows_label.pack(padx=100, pady=10)
 
@@ -335,7 +353,7 @@ def main():
     process_button.pack(padx=100, pady=30)
 
     root.mainloop()
-
+    
 if __name__ == "__main__":
     main()
 
