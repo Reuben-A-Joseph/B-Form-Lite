@@ -1,6 +1,6 @@
 ```python
 # Project Name
-B-Form Light
+B-Form Lite
 
 ## Assets
 This project includes image and Excel files stored in the `assets/` folder.  
