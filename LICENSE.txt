@@ -1,5 +1,5 @@
 """
-Project Name: B-Form Light
+Project Name: B-Form Lite
 Author: ASSR
 License: GNU General Public License v3.0 (GPLv3)
 See LICENSE file for details.
