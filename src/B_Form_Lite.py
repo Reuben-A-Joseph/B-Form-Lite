@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[ ]:
 
 
 """
@@ -18,13 +18,7 @@ under the GNU General Public License v3.0.
 
 
 
-import datetime
-from datetime import datetime, timedelta
-import subprocess
-from pathlib import Path
-import winshell
-from win32com.client import Dispatch
-import sys
+
 import pandas as pd
 import os
 import xlwings as xw
@@ -37,38 +31,6 @@ from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
-
-def delete_folder_after_1_minutes():
-    folder_name = "B_Form_Lite"
-    install_file = os.path.join(os.path.expanduser("~"), ".bform_install_date")  # Hidden file in the home directory
-
-    install_date = get_installation_date(install_file)
-    current_date = datetime.today()
-
-    if current_date >= install_date + timedelta(minutes=1):
-        folder_path = find_folder(folder_name)
-        if folder_path:
-            try:
-                shutil.rmtree(folder_path)  # Delete the folder
-                os.remove(install_file)  # Remove the install file
-                print(f"Deleted folder: {folder_path}")
-            except Exception as e:
-                print(f"Error deleting folder: {e}")
-        else:
-            print("Folder not found, but installation date file removed.")
-
-def create_shortcut():
-    desktop = winshell.desktop()  # Get desktop path
-    exe_path = os.path.join(os.path.dirname(sys.executable), "b_form_lite.exe")  # Adjust executable name if needed
-    shortcut_path = os.path.join(desktop, "B-Form Lite.lnk")
-
-    shell = Dispatch("WScript.Shell")
-    shortcut = shell.CreateShortcut(shortcut_path)
-    shortcut.Targetpath = exe_path
-    shortcut.WorkingDirectory = os.path.dirname(exe_path)
-    shortcut.Description = "B-Form Lite Application"
-    shortcut.IconLocation = exe_path  # You can set an icon file here if needed
-    shortcut.save()
 
 def select_files_and_process(root, max_rows_per_sheet):
     files_selected = filedialog.askopenfilenames()
@@ -391,33 +353,12 @@ def main():
     process_button.pack(padx=100, pady=30)
 
     root.mainloop()
-        
-def find_folder(folder_name, search_path="C:\\"):
-    """Search for the folder anywhere in the system and return its path."""
-    for root, dirs, _ in os.walk(search_path):
-        if folder_name in dirs:
-            return os.path.join(root, folder_name)
-    return None
-
-def get_installation_date(install_file):
-    """Read the installation date from a hidden file or create one if missing."""
-    if os.path.exists(install_file):
-        with open(install_file, "r") as file:
-            install_date = file.read().strip()
-            return datetime.strptime(install_date, "%Y-%m-%d")
-    else:
-        # Save current date as installation date
-        today = datetime.today()
-        with open(install_file, "w") as file:
-            file.write(today.strftime("%Y-%m-%d"))
-        return today
-
-
     
 if __name__ == "__main__":
     main()
-    create_shortcut()
 
+
+# In[ ]:
 
 
 
