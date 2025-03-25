@@ -103,36 +103,6 @@ def process_file(selected_file, output_folder, max_rows_per_sheet):
     # Dictionary mapping codes to full forms
     code_to_full_form = {"IC": "ICEAS"}
 
-    # Extract 2nd and 3rd characters from cells B5 to B13 and save them to the output worksheet
-    for i in range(5, new_ws.max_row + 1):
-        cell_value = new_ws[f"B{i}"].value
-        if cell_value:  # Check if the cell is not empty
-            second_and_third_chars = cell_value[1:3]  # Extract 2nd and 3rd characters
-            new_ws[f"G{i}"].value = code_to_full_form.get(second_and_third_chars, "Unknown Code")
-            new_ws[f"J{i}"].value = second_and_third_chars
-        
-            sixth_and_seventh_chars = cell_value[5:7]  # Extract 6th and 7th characters
-            new_ws[f"H{i-0}"].value = sixth_and_seventh_chars
-            new_ws[f"I{i-0}"].value = "B.E." '(' + sixth_and_seventh_chars +')'
-
-    def int_to_roman(num):
-        val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
-        syms = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
-        roman_num = ''
-        i = 0
-        while num > 0:
-            for _ in range(num // val[i]):
-                roman_num += syms[i]
-                num -= val[i]
-            i += 1
-        return roman_num
-    
-    # Convert the number in cell F5 to Roman numeral
-    f5_value = new_ws["F5"].value
-    if f5_value is not None:
-        roman_numeral = int_to_roman(f5_value)
-        new_ws["F5"].value = roman_numeral 
-
     # Save the new Excel file
     # Ensure new_filename is properly assigned
     new_filename = output_filename 
@@ -183,44 +153,6 @@ def process_excel_file(new_filename, max_rows_per_sheet):
             for source_cell, dest_cell in zip(source_cells, dest_cells):
                 dest_ws[dest_cell].value = source_ws[source_cell].value
                 
-        def copy_data_merged_cells(self, source_date_cells, dest_combined_cell):
-            source_ws = self.source_wb.active
-            dest_ws = self.dest_wb.active
-        
-            # Concatenate the values from different cells in the source file
-            combined_value = ""
-            for cell in source_date_cells:
-                combined_value += str(source_ws[cell].value) + " "
-
-            # Set the combined value to the destination cell in the destination file
-            dest_ws[dest_combined_cell].value = combined_value.strip()
-
-        def copy_data_merged_cells_time(self, source_time_cells, dest_combined_cell_time):
-            source_ws = self.source_wb.active
-            dest_ws = self.dest_wb.active
-        
-            # Concatenate the values from different cells in the source file
-            combined_value_1 = ""
-            for cell in source_time_cells:
-                combined_value_1 += str(source_ws[cell].value) + " "
-
-            # Format the value based on specific conditions
-            if combined_value_1.strip() == '0 9 : 3 0':
-                formatted_value = '0 9 : 3 0 AM'
-            elif combined_value_1.strip() in ['0 2 : 0 0', '1 4 : 0 0']:
-                formatted_value = '0 2 : 0 0 PM'
-            else:
-                formatted_value = combined_value_1.strip() + ' AM'  # Default formatting
-
-            # Assign the formatted value to the destination cell
-            dest_ws[dest_combined_cell_time].value = formatted_value
-
-            # Set M14 based on the assigned value
-            if formatted_value == '0 9 : 3 0 AM':
-                dest_ws['M14'].value = '1 2 : 3 0 PM'
-            else:
-                dest_ws['M14'].value = '0 5 : 0 0 PM'
-
         def copy_values_with_images(self):   
             source_ws = self.source_wb.active
             dest_ws = self.dest_wb.active
